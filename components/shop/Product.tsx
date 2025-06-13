@@ -7,6 +7,7 @@ import { Icon, FavouriteIcon, StarIcon } from "@/components/ui/icon";
 import { VStack } from "@/components/ui/vstack";
 import { HStack } from "@/components/ui/hstack";
 import { Text } from "@/components/ui/text";
+import { useRouter } from "expo-router";
 
 // interface ProductProps extends ProductType {
 // }
@@ -25,8 +26,9 @@ const Product = ({
   image,
   users,
 }: ProductType) => {
+  const router = useRouter();
   return (
-    <Pressable className="mx-2 mb-4">
+    <Pressable className="mx-2 mb-4" onPress={() => router.navigate({pathname:'/detail', params:{id}})}>
       <Card className="p-0">
         <Image
           style={{ width: "100%", aspectRatio: 3 / 4, borderRadius: 5 }}
