@@ -9,8 +9,7 @@ import { products } from "@/data";
 import { Text } from "@/components/ui/text";
 import { ScrollView } from "react-native";
 import { HStack } from "@/components/ui/hstack";
-import { Icon, FavouriteIcon, StarIcon, CheckIcon } from "@/components/ui/icon";
-
+import { Icon, FavouriteIcon, StarIcon, CheckIcon, AddIcon, RemoveIcon, CloseCircleIcon } from "@/components/ui/icon";
 
 import {
   Checkbox,
@@ -19,16 +18,91 @@ import {
   CheckboxIcon,
   CheckboxGroup,
 } from "@/components/ui/checkbox";
+import { Button, ButtonIcon, ButtonText } from "@/components/ui/button";
+
+import {
+  useToast,
+  Toast,
+  ToastTitle,
+  ToastDescription,
+} from "@/components/ui/toast"
+
+import {
+  Actionsheet,
+  ActionsheetContent, 
+  ActionsheetDragIndicator,
+  ActionsheetDragIndicatorWrapper,
+  ActionsheetBackdrop,
+} from "@/components/ui/actionsheet"  
+import { Box } from "@/components/ui/box";
+
+import { Fab, FabLabel, FabIcon } from "@/components/ui/fab"
+
+type CartProps = {
+  id: number;
+  color: string;
+  size: string;
+  quantity: number;
+};
 
 const Detail = () => {
   const [more, setMore] = useState(false);
 
   const [colors, setColors] = useState([]);
   const [sizes, setSizes] = useState([]);
-
+  const [quantity, setQuantity] = useState(1);
+  const [cart, setCart] = useState<CartProps[]>([]);
 
   const { id } = useLocalSearchParams();
   const product = products.find((p) => p.id === +id);
+
+  const [showActionsheet, setShowActionsheet] = useState(false)
+  const handleClose = () => setShowActionsheet(false)
+  const submitHandler = () => {
+    setShowActionsheet(false)
+    if(quantity === 0) {
+      return;
+    }
+    colors.forEach((color) => {
+      sizes.forEach((size) => {
+        setCart((prev) => [{id:Math.random(), color, size, quantity} ,...prev])
+      })
+    })
+
+    //reset
+    setColors([]);
+    setSizes([]);
+    setQuantity(1);
+  }
+
+ 
+  const toast = useToast()
+  const [toastId, setToastId] = useState(0)
+  const handleToast = (title: string, description: string) => {
+    if (!toast.isActive(toastId.toString())) {
+      showNewToast(title, description)
+    }
+  }
+  const showNewToast = (title: string, description: string) => {
+    const newId = Math.random()
+    setToastId(newId)
+    toast.show({
+      id: newId.toString(),
+      placement: "bottom",
+      duration: 2000,
+      render: ({ id }) => {
+        const uniqueToastId = "toast-" + id
+        return (
+          <Toast nativeID={uniqueToastId} action="info" variant="solid">
+            <ToastTitle>{title}</ToastTitle>
+            <ToastDescription>
+              {description}
+            </ToastDescription>
+          </Toast>
+        )
+      },
+    }) 
+  }
 
   // console.log('first', product);
   return (
@@ -92,15 +166,18 @@ const Detail = () => {
             }}
           >
             <HStack space="xl">
-              {
-                product?.colors.map((item) => (
-              <Checkbox value={item.name} key={item.id} isDisabled={!item.stock}>
-                <CheckboxIndicator>
-                  <CheckboxIcon as={CheckIcon} />
-                </CheckboxIndicator>
-                <CheckboxLabel>{item.name}</CheckboxLabel>
-              </Checkbox> 
-                ))}
+              {product?.colors.map((item) => (
+                <Checkbox
+                  value={item.name}
+                  key={item.id}
+                  isDisabled={!item.stock}
+                >
+                  <CheckboxIndicator>
+                    <CheckboxIcon as={CheckIcon} />
+                  </CheckboxIndicator>
+                  <CheckboxLabel>{item.name}</CheckboxLabel>
+                </Checkbox>
+              ))}
             </HStack>
           </CheckboxGroup>
           <Text className=" mb-1 mt-2 font-medium">Choose Sizes</Text>
@@ -111,19 +188,103 @@ const Detail = () => {
             }}
           >
             <HStack space="xl">
-              {
-                product?.sizes.map((item) => (
-              <Checkbox value={item.name} key={item.id} isDisabled={!item.stock}>
-                <CheckboxIndicator>
-                  <CheckboxIcon as={CheckIcon} />
-                </CheckboxIndicator>
-                <CheckboxLabel>{item.name}</CheckboxLabel>
-              </Checkbox> 
-                ))}
+              {product?.sizes.map((item) => (
+                <Checkbox
+                  value={item.name}
+                  key={item.id}
+                  isDisabled={!item.stock}
+                >
+                  <CheckboxIndicator>
+                    <CheckboxIcon as={CheckIcon} />
+                  </CheckboxIndicator>
+                  <CheckboxLabel>{item.name}</CheckboxLabel>
+                </Checkbox>
+              ))}
             </HStack>
           </CheckboxGroup>
+          <Button size="lg" className="mt-6 rounded-lg self-start bg-sky-500" onPress={() => {
+            if(colors.length > 0 && sizes.length > 0) {
+              setShowActionsheet(true);
+              return;
+            }
+            const title = `Must choose ${colors.length === 0 ? 'color -' : ''} ${sizes.length === 0 ? 'size' : ''}`;
+            const description = 'Please set quantity just after choosing!';
+            handleToast(title, description);
+          }}>
+            <ButtonText>Set Quantity</ButtonText>
+          </Button>
+          {cart.length > 0 && (
+            <VStack>
+              {cart.map((c) => (
+                <HStack key={c.id} space="sm" className=" items-center justify-between bg-slate-100 mb-2 px-2 py-1 rounded-md">
+                  <HStack className=" items-center" space="md">
+                    <Icon as={AddIcon} size="sm" />
+                  <Text>{c.color} - {c.size} ( {c.quantity} )</Text>
+                  </HStack>
+                <Button className=" mr-5" size="lg" 
+                variant="link"
+                onPress={() => setCart((prev) => prev.filter((item) => item.id !== c.id))} //true or false
+                >
+                  <ButtonIcon as={CloseCircleIcon}/>
+                </Button>
+                </HStack>
+              ))}
+            </VStack>
+          )}
         </VStack>
+        <Box className=" h-40">
+        </Box> 
       </ScrollView>
+      <Fab
+        size="md"
+        placement="bottom right"
+        className=" mb-24 bg-green-500"
+      >
+        <FabIcon as={AddIcon} size="md"/>
+        <FabLabel bold>Add to Cart</FabLabel>
+      </Fab>
+      <Actionsheet isOpen={showActionsheet} onClose={handleClose}>
+        <ActionsheetBackdrop />
+        <ActionsheetContent>
+          <ActionsheetDragIndicatorWrapper>
+            <ActionsheetDragIndicator />
+          </ActionsheetDragIndicatorWrapper>
+          <VStack className=" w-full items-center justify-center pt-5">
+            <Text bold>You chose colors and sizes</Text>
+            <Text>{colors.join(", ")} - {sizes.join(", ")}</Text>
+            <Text bold className=" mt-8">Please set quantity</Text>
+            <Text className=" my-8 " bold size="5xl">{quantity}</Text>
+            <HStack className=" w-full" space="lg">
+              <Button size="lg" className=" flex-1 bg-sky-500" onPress={() => setQuantity(q => q + 1)}>
+                <ButtonText>
+                  Increase
+                </ButtonText>
+                <ButtonIcon as={AddIcon}/>
+              </Button>
+              <Button size="lg" className=" flex-1 bg-sky-500" onPress={() =>
+                {if(quantity === 1) {
+                  return;
+                }
+                setQuantity(q => q - 1)}}>
+                <ButtonText>
+                  Decrease
+                </ButtonText>
+                <ButtonIcon as={RemoveIcon}/>
+              </Button>
+            </HStack>
+              <Button size="lg" className=" mb-2 mt-6 bg-green-500" onPress={submitHandler}>
+                <ButtonText className=" font-bold flex-1 text-center">
+                  Confirm
+                </ButtonText> 
+              </Button>
+              <Button size="lg" className=" mb-12 bg-gray-500" onPress={handleClose}>
+                <ButtonText className=" font-bold flex-1 text-center">
+                  Cancel
+                </ButtonText> 
+              </Button>
+          </VStack>
+        </ActionsheetContent>
+      </Actionsheet>
     </VStack>
   );
 };
