@@ -86,7 +86,7 @@ const ViewPager = () => {
 		  ],
 		  {
 			listener: ({ nativeEvent: { offset, position } }) => {
-			  console.log(`Position: ${position} Offset: ${offset}`);
+			//   console.log(`Position: ${position} Offset: ${offset}`);
 			},
 			useNativeDriver: true,
 		  }
