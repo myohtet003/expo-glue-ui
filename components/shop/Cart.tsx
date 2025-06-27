@@ -1,7 +1,6 @@
 import { ShoppingCart } from "lucide-react-native";
+import React from "react"; 
 
-import React from "react";
-import { Box } from "../ui/box";
 import { VStack } from "../ui/vstack";
 import { Badge, BadgeText } from "../ui/badge";
 import { Icon } from "../ui/icon";

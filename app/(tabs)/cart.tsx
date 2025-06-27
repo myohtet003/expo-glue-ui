@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { useRouter } from "expo-router";
 import { Alert, SafeAreaView, ScrollView } from "react-native";
 import { Image } from "expo-image";
 
@@ -5,13 +7,13 @@ import { Box } from "@/components/ui/box";
 import { Heading } from "@/components/ui/heading";
 import { Text } from "@/components/ui/text";
 
-import { carts } from "@/data";
 import { VStack } from "@/components/ui/vstack";
 import { HStack } from "@/components/ui/hstack";
 import { Button, ButtonIcon, ButtonText } from "@/components/ui/button";
 import { AddIcon, Icon, RemoveIcon } from "@/components/ui/icon";
 import { TrashIcon } from "lucide-react-native";
 import { Fab, FabIcon } from "@/components/ui/fab";
+import userCartStore from "@/store/CartStore";
 
 import {
   AlertDialog,
@@ -20,16 +22,21 @@ import {
   AlertDialogFooter,
   AlertDialogBody,
   AlertDialogBackdrop,
-} from "@/components/ui/alert-dialog"
-import { useState } from "react";
+} from "@/components/ui/alert-dialog";
+import { Q } from "@expo/html-elements";
 
 const blurhash =
   "|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[";
 
 export default function CartScreen() {
-
-   const [showAlertDialog, setShowAlertDialog] =  useState(false)
-  const handleClose = () => setShowAlertDialog(false)
+  const router = useRouter();
+  const [showAlertDialog, setShowAlertDialog] = useState(false);
+  const { carts, clearCart,updateCart,removeFromCart, getTotalItems, getTotalPrice } = userCartStore();
+  const [deleteProduct, setDeleteProduct] = useState<{productId: number; itemId: number}>();
+  const handleClose = () => setShowAlertDialog(false);
+  const handleDelete = () => {
+    removeFromCart(deleteProduct!.productId, deleteProduct!.itemId)
+    setShowAlertDialog(false)};
 
   const deleteAlerts = () =>
     Alert.alert(
@@ -40,23 +47,39 @@ export default function CartScreen() {
         {
           text: "Delete",
           style: "destructive",
-          onPress: () => console.log("All Items Deleted!"),
+          onPress: () => {
+            clearCart();
+          },
         },
       ]
     );
+
   return (
     <SafeAreaView className=" flex-1 px-4 bg-white">
       {carts.length === 0 ? (
-        <Text>Empty Cart!</Text>
+        <Box className=" flex-1 items-center justify-center">
+          <Heading className=" mb-4 text-center">Your Cart is Empty!</Heading>
+          <Text className=" mb-6 text-center text-gray-500">
+        Add some products to your cart to see them here.
+          </Text>
+          <Button
+          size="lg"
+          className=" bg-blue-500"
+          onPress={() => router.navigate("/")}>
+            <ButtonText>Go to Shop</ButtonText>
+          </Button>
+        </Box>
       ) : (
         <Box className=" flex-1">
-          <Heading className=" my-2 mb-6 text-center">Shopping Cart</Heading>
+          <Heading className=" my-2 mb-6 text-center">
+            Shopping Cart - {getTotalItems()}
+          </Heading>
           <ScrollView>
             <VStack space="md">
               {carts.map((product) => (
                 <HStack
                   key={product.id}
-                  className=" justify-between border-gray-200 px-4 py-3 border-2 rounded-lg mx-4"
+                  className=" justify-between border-gray-200 px-4 py-3 border-2 gap-3 rounded-lg mx-4"
                 >
                   <VStack className=" w-1/4">
                     <Image
@@ -77,9 +100,9 @@ export default function CartScreen() {
                       <HStack
                         key={item.id}
                         space="3xl"
-                        className=" justify-center items-center"
+                        className=" justify-center"
                       >
-                        <VStack>
+                        <VStack className="w-1/3 items-end">
                           <Text size="sm" className=" font-light">
                             {item.color} - {item.size}
                           </Text>
@@ -87,11 +110,12 @@ export default function CartScreen() {
                             ${product.price} - {item.quantity}
                           </Text>
                         </VStack>
-                        <HStack space="xs" className=" items-center">
+                        <HStack space="xs" className="w-2/3 items-center">
                           <Button
                             size="xs"
                             variant="outline"
                             className=" border-gray-300"
+                            onPress={() => updateCart(product.id, item.id, item.quantity + 1)}
                           >
                             <ButtonIcon as={AddIcon} />
                           </Button>
@@ -100,17 +124,22 @@ export default function CartScreen() {
                             size="xs"
                             variant="outline"
                             className=" border-gray-300"
+                            onPress={() => updateCart(product.id, item.id, item.quantity - 1)}
+                            isDisabled={item.quantity <= 1 ? true : false}
                           >
-                            <ButtonIcon as={RemoveIcon} />
+                            <ButtonIcon as={RemoveIcon} className="" />
                           </Button>
-                          <Button
+                            <Button
                             size="xs"
                             variant="link"
                             className=" border-gray-300 ml-2"
-                            onPress={() => setShowAlertDialog(true)}
-                          >
-                            <ButtonIcon as={TrashIcon} />
-                          </Button>
+                            onPress={() => 
+                              {
+                                setDeleteProduct({productId: product.id, itemId: item.id})
+                                setShowAlertDialog(true)}}
+                            >
+                            <ButtonIcon as={TrashIcon} className="font-bold" />
+                            </Button>
                         </HStack>
                       </HStack>
                     ))}
@@ -121,15 +150,20 @@ export default function CartScreen() {
             <VStack className="px-4 ">
               <HStack className="my-6 justify-between">
                 <Text bold>Total Price:</Text>
-                <Text bold>$2700</Text>
+                <Text bold>${getTotalPrice()}</Text>
               </HStack>
               <Button size="lg" className=" bg-green-500">
                 <ButtonText>Checkout</ButtonText>
               </Button>
             </VStack>
           </ScrollView>
-          <Fab size="md" placement="bottom right" className="bg-red-500 mb-16" onPress={deleteAlerts}>
-            <FabIcon as={TrashIcon}  />
+          <Fab
+            size="md"
+            placement="bottom right"
+            className="bg-red-500 mb-16"
+            onPress={deleteAlerts}
+          >
+            <FabIcon as={TrashIcon} />
           </Fab>
         </Box>
       )}
@@ -144,14 +178,15 @@ export default function CartScreen() {
           </AlertDialogHeader>
           <AlertDialogBody>
             <Text size="sm" className="text-center">
-              Are you sure? This product will be deleted from shopping cart. This cannot be undone.
+              Are you sure? This product will be deleted from shopping cart.
+              This cannot be undone.
             </Text>
           </AlertDialogBody>
           <AlertDialogFooter className="mt-5">
             <Button
               size="sm"
               action="negative"
-              onPress={handleClose}
+              onPress={handleDelete}
               className="px-[30px]"
             >
               <ButtonText>Delete</ButtonText>

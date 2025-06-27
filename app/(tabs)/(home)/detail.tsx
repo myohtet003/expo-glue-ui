@@ -1,15 +1,17 @@
 import React, { useState } from "react";
+import { Stack, useLocalSearchParams,useRouter } from "expo-router";
+import { ScrollView } from "react-native";
 
 import ViewPager from "@/components/shop/ViewPager";
 import { VStack } from "@/components/ui/vstack";
-import { Stack, useLocalSearchParams } from "expo-router";
 import { Pressable } from "@/components/ui/pressable";
 import Cart from "@/components/shop/Cart";
 import { products } from "@/data";
 import { Text } from "@/components/ui/text";
-import { ScrollView } from "react-native";
 import { HStack } from "@/components/ui/hstack";
 import { Icon, FavouriteIcon, StarIcon, CheckIcon, AddIcon, RemoveIcon, CloseCircleIcon } from "@/components/ui/icon";
+import { CartItem } from "@/types";
+import userCartStore from "@/store/CartStore";
 
 import {
   Checkbox,
@@ -38,25 +40,23 @@ import { Box } from "@/components/ui/box";
 
 import { Fab, FabLabel, FabIcon } from "@/components/ui/fab"
 
-type CartProps = {
-  id: number;
-  color: string;
-  size: string;
-  quantity: number;
-};
-
+ 
 const Detail = () => {
   const [more, setMore] = useState(false);
+  const {addToCart} = userCartStore();
+  const router = useRouter();
 
   const [colors, setColors] = useState([]);
   const [sizes, setSizes] = useState([]);
   const [quantity, setQuantity] = useState(1);
-  const [cart, setCart] = useState<CartProps[]>([]);
+  const [cart, setCart] = useState<CartItem[]>([]);
 
   const { id } = useLocalSearchParams();
   const product = products.find((p) => p.id === +id);
 
   const [showActionsheet, setShowActionsheet] = useState(false)
+
+  const totalItems = cart.reduce((total, item) => total + item.quantity, 0)
   const handleClose = () => setShowActionsheet(false)
   const submitHandler = () => {
     setShowActionsheet(false)
@@ -102,6 +102,25 @@ const Detail = () => {
         )
       },
     }) 
+  }
+
+  const addCartToStore = () => {
+    if(cart.length === 0) {
+      handleToast("Cart is Empty!", "Please add items first to your cart!");
+      return;
+    }
+
+    const cartProduct = {
+      id: product!.id,
+      title: product!.title,
+      image: product!.image,
+      price: product!.price,
+      items: cart,
+    }
+
+    addToCart(cartProduct);
+    setCart([]);
+    router.back();
   }
 
   // console.log('first', product);
@@ -213,6 +232,11 @@ const Detail = () => {
           }}>
             <ButtonText>Set Quantity</ButtonText>
           </Button>
+          {totalItems > 0 && (
+          <Text size="md" className="ml-2 font-semibold text-gray-500">
+            Total Price - ${totalItems * Number(product?.price.toFixed(2))}
+          </Text>
+          )}
           {cart.length > 0 && (
             <VStack>
               {cart.map((c) => (
@@ -239,6 +263,7 @@ const Detail = () => {
         size="md"
         placement="bottom right"
         className=" mb-24 bg-green-500"
+        onPress={addCartToStore}
       >
         <FabIcon as={AddIcon} size="md"/>
         <FabLabel bold>Add to Cart</FabLabel>
