@@ -1,8 +1,7 @@
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 
-import { CartItem, CartType } from "@/types";
-import { carts } from "@/data";
+import { CartType } from "@/types"; 
 
 type State = {
   carts: CartType[];
