@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { Text, View } from 'react-native';
 
 import { useAuthStore } from '@/store/AuthStore';
@@ -8,6 +8,7 @@ export default function SignIn() {
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <Text
+      style={{fontSize:24, marginBottom:20}}
         onPress={() => {
           login();
           // Navigate after signing in. You may want to tweak this to ensure sign-in is
@@ -16,6 +17,9 @@ export default function SignIn() {
         }}>
         Sign In
       </Text>
+      <Link href="/register">
+      <Text>Register</Text>
+      </Link>
     </View>
   );
 }
