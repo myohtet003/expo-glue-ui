@@ -1,10 +1,11 @@
-import { View, Text, Button } from 'react-native'
+import { View, Text, Button, Alert } from 'react-native'
 import React, { useEffect, useRef, useState } from 'react'
 import { OtpInput } from "react-native-otp-entry";
 import { useRouter } from 'expo-router';
+import { usePreventRemove } from '@react-navigation/native';
 
 import { useAuthStore } from '@/store/AuthStore';
-import { formatTime } from '@/app/utils'; 
+import { formatTime } from '@/app/utils/index'; 
 
 const OTP_TIMEOUT_MS = 90 * 1000;
 
@@ -24,6 +25,19 @@ const OtpScreen = () => {
 	  return () => clearInterval(id)
 	}, [])
 	
+
+	usePreventRemove(timeLeft > 0, () => {
+		Alert.alert(
+			"Hold On!",
+			`Please wait ${formatTime(timeLeft)} before leaving!`,
+			[
+				{
+					text: 'OK',
+					style: 'default'
+				}
+			]
+		);
+	})
 
 	const handleOtpScreen = (otp: string) => {
 		setPasswordScreen()
