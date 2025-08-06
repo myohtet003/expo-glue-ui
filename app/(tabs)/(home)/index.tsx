@@ -69,7 +69,7 @@ export default function HomeScreen() {
           <FlashList
             data={products}
             numColumns={numColumns}
-            renderItem={({ item }) => <Product users={[]} {...item} />}
+            renderItem={({ item }) => <Product {...item} />}
             keyExtractor={(item) => item.id.toString()}
             estimatedItemSize={300}
             showsVerticalScrollIndicator={false}

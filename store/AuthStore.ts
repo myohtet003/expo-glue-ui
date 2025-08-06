@@ -10,12 +10,19 @@ type State = {
   accessToken: string | null;
   refreshToken: string | null;
   randomToken: string | null;
+  phone: string | null;
+  token: string | null;
 };
 
 type Actions = {
-  setOtpScreen: () => void;
-  setPasswordScreen: () => void;
+  setOtpScreen: (phone: string, token: string) => void;
+  setPasswordScreen: (token: string) => void;
   login: (tokens: {
+    accessToken: string;
+    refreshToken: string;
+    randomToken: string;
+  }) => void;
+  setAccessToken: (tokens: {
     accessToken: string;
     refreshToken: string;
     randomToken: string;
@@ -32,21 +39,30 @@ const initialState: State = {
   accessToken: null,
   refreshToken: null,
   randomToken: null,
+  phone: null,
+  token: null,
 };
 
 export const useAuthStore = create<State & Actions>()(
   persist(
     (set) => ({
       ...initialState,
-      setOtpScreen: () => set((state) => ({ ...state, isOtpScreen: true })),
-      setPasswordScreen: () =>
-        set((state) => ({ ...state, isPasswordScreen: true })),
+      setOtpScreen: (phone , token ) => set((state) => ({ ...state, isOtpScreen: true, phone, token })),
+      setPasswordScreen: (token) =>
+        set((state) => ({ ...state, isPasswordScreen: true, token })),
       login: ({ accessToken, refreshToken, randomToken }) =>
         set((state) => ({
           ...state,
           isLoggedIn: true,
           isOtpScreen: false,
           isPasswordScreen: false,
+          accessToken,
+          refreshToken,
+          randomToken,
+        })),
+        setAccessToken: ({ accessToken, refreshToken, randomToken }) =>
+        set((state) => ({
+          ...state, 
           accessToken,
           refreshToken,
           randomToken,

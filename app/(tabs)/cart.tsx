@@ -22,7 +22,7 @@ import {
   AlertDialogFooter,
   AlertDialogBody,
   AlertDialogBackdrop,
-} from "@/components/ui/alert-dialog"; 
+} from "@/components/ui/alert-dialog";
 
 const blurhash =
   "|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[";
@@ -30,12 +30,25 @@ const blurhash =
 export default function CartScreen() {
   const router = useRouter();
   const [showAlertDialog, setShowAlertDialog] = useState(false);
-  const { carts, clearCart,updateCart,removeFromCart, getTotalItems, getTotalPrice } = userCartStore();
-  const [deleteProduct, setDeleteProduct] = useState<{productId: number; itemId: number}>();
+  const {
+    carts,
+    clearCart,
+    updateCart,
+    removeFromCart,
+    getTotalItems,
+    getTotalPrice,
+  } = userCartStore();
+  const [deleteProduct, setDeleteProduct] = useState<{
+    productId: number;
+    itemId: number;
+  } | null>(null);
   const handleClose = () => setShowAlertDialog(false);
   const handleDelete = () => {
-    removeFromCart(deleteProduct!.productId, deleteProduct!.itemId)
-    setShowAlertDialog(false)};
+    if (deleteProduct) {
+      removeFromCart(deleteProduct!.productId, deleteProduct!.itemId);
+    }
+    setShowAlertDialog(false);
+  };
 
   const deleteAlerts = () =>
     Alert.alert(
@@ -59,12 +72,13 @@ export default function CartScreen() {
         <Box className=" flex-1 items-center justify-center">
           <Heading className=" mb-4 text-center">Your Cart is Empty!</Heading>
           <Text className=" mb-6 text-center text-gray-500">
-        Add some products to your cart to see them here.
+            Add some products to your cart to see them here.
           </Text>
           <Button
-          size="lg"
-          className=" bg-blue-500"
-          onPress={() => router.navigate("/")}>
+            size="lg"
+            className=" bg-blue-500"
+            onPress={() => router.navigate("/")}
+          >
             <ButtonText>Go to Shop</ButtonText>
           </Button>
         </Box>
@@ -114,7 +128,9 @@ export default function CartScreen() {
                             size="xs"
                             variant="outline"
                             className=" border-gray-300"
-                            onPress={() => updateCart(product.id, item.id, item.quantity + 1)}
+                            onPress={() =>
+                              updateCart(product.id, item.id, item.quantity + 1)
+                            }
                           >
                             <ButtonIcon as={AddIcon} />
                           </Button>
@@ -123,22 +139,27 @@ export default function CartScreen() {
                             size="xs"
                             variant="outline"
                             className=" border-gray-300"
-                            onPress={() => updateCart(product.id, item.id, item.quantity - 1)}
+                            onPress={() =>
+                              updateCart(product.id, item.id, item.quantity - 1)
+                            }
                             isDisabled={item.quantity <= 1 ? true : false}
                           >
                             <ButtonIcon as={RemoveIcon} className="" />
                           </Button>
-                            <Button
+                          <Button
                             size="xs"
                             variant="link"
                             className=" border-gray-300 ml-2"
-                            onPress={() => 
-                              {
-                                setDeleteProduct({productId: product.id, itemId: item.id})
-                                setShowAlertDialog(true)}}
-                            >
+                            onPress={() => {
+                              setDeleteProduct({
+                                productId: product.id,
+                                itemId: item.id,
+                              });
+                              setShowAlertDialog(true);
+                            }}
+                          >
                             <ButtonIcon as={TrashIcon} className="font-bold" />
-                            </Button>
+                          </Button>
                         </HStack>
                       </HStack>
                     ))}

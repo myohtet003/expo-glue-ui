@@ -13,6 +13,8 @@ const Cart = () => {
   const router = useRouter();
   const totalItems = userCartStore((state) => state.getTotalItems());
 
+  // console.log('first', totalItems);
+
   return (
     <Pressable
       className="items-center"
