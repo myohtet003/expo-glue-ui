@@ -13,6 +13,8 @@ interface CategoryProps extends CategoryType {
 const blurhash =
   "|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[";
 
+const IMG_URL = process.env.EXPO_PUBLIC_IMG_URL;
+
 const Category = ({ id, name, image, select, onSelect }: CategoryProps) => {
   return (
     <Pressable onPress={() => onSelect(id)}>
@@ -26,7 +28,7 @@ const Category = ({ id, name, image, select, onSelect }: CategoryProps) => {
               borderRadius: 28,
             },
           ]}
-          source={image}
+          source={IMG_URL + image}
           placeholder={{ blurhash }}
           contentFit="cover"
           transition={1000}

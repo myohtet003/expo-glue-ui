@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Image } from "expo-image";
 import { Dimensions, ScrollView } from "react-native";
 import { FlashList } from "@shopify/flash-list";
+import { useQuery } from "@tanstack/react-query";
 
 import { HStack } from "@/components/ui/hstack";
 import { Pressable } from "@/components/ui/pressable";
@@ -15,6 +16,9 @@ import Category from "@/components/shop/Category";
 import Product from "@/components/shop/Product";
 import { MoveUpRight } from "lucide-react-native";
 import { Box } from "@/components/ui/box";
+import { fetchCategories } from "@/api/fetch";
+import { Text } from "@/components/ui/text";
+import { CategoryType } from "@/types";
 
 const blurhash =
   "|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[";
@@ -24,9 +28,23 @@ export default function HomeScreen() {
   const width = Dimensions.get("screen").width;
   const numColumns = width < 600 ? 2 : width < 768 ? 3 : 4;
 
-  const handleSelect =  (id: number) => {
+  const {
+    isPending: isCategoryPending,
+    error: categoryError,
+    data: categories,
+    refetch,
+  } = useQuery<CategoryType[]>({
+    queryKey: ["categories"],
+    queryFn: fetchCategories,
+  });
+
+  const handleSelect = (id: number) => {
     setSelect(id);
   };
+
+  if (categoryError) {
+    return <Text>Error: {categoryError.message}</Text>;
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -54,17 +72,22 @@ export default function HomeScreen() {
         />
         <VStack className="mt-4 px-5">
           <Title title="Shop By Category" actionText="See All" />
-          <FlashList
-            data={categories}
-            extraData={select}
-            renderItem={({ item }) => (
-              <Category {...item} select={select} onSelect={handleSelect} />
-            )}
-            keyExtractor={(item) => item.id.toString()}
-            horizontal
-            estimatedItemSize={90}
-            showsHorizontalScrollIndicator={false}
-          />
+          {isCategoryPending ? (
+            <Text>Loading...</Text>
+          ) : (
+            <FlashList
+              data={categories}
+              extraData={select}
+              renderItem={({ item }) => (
+                <Category {...item} select={select} onSelect={handleSelect} />
+              )}
+              keyExtractor={(item) => item.id.toString()}
+              horizontal
+              estimatedItemSize={90}
+              showsHorizontalScrollIndicator={false}
+            />
+          )}
+          ;
           <Title title="Recommended for You" actionText="See All" />
           <FlashList
             data={products}
