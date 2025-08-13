@@ -1,24 +1,25 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, ButtonText, ButtonIcon } from "@/components/ui/button";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Image } from "expo-image";
 import { Dimensions, ScrollView } from "react-native";
 import { FlashList } from "@shopify/flash-list";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 
 import { HStack } from "@/components/ui/hstack";
 import { Pressable } from "@/components/ui/pressable";
 import Cart from "@/components/shop/Cart";
 import Title from "@/components/shop/Title";
 import { VStack } from "@/components/ui/vstack";
-import { categories, products } from "@/data";
+import { products } from "@/data";
 import Category from "@/components/shop/Category";
 import Product from "@/components/shop/Product";
 import { MoveUpRight } from "lucide-react-native";
 import { Box } from "@/components/ui/box";
-import { fetchCategories } from "@/api/fetch";
+import { fetchCategories, fetchProducts } from "@/api/fetch";
 import { Text } from "@/components/ui/text";
 import { CategoryType } from "@/types";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const blurhash =
   "|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[";
@@ -32,10 +33,34 @@ export default function HomeScreen() {
     isPending: isCategoryPending,
     error: categoryError,
     data: categories,
-    refetch,
+    refetch: refetchCategories,
   } = useQuery<CategoryType[]>({
     queryKey: ["categories"],
     queryFn: fetchCategories,
+  });
+
+  // useEffect(() => {
+  //   if(categories) {
+  //     setSelect(categories[0].id)
+  //   }
+  // }, [categories]);
+
+  const {
+    data,
+    isPending: isProductPending,
+    error: productError,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    refetch,
+  } = useInfiniteQuery({
+    queryKey: ["products", select],
+    queryFn: ({ pageParam }) =>
+      fetchProducts({ pageParam, categoryId: select }),
+    initialPageParam: undefined,
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+    staleTime: 5 * 60 * 1000, //5 min
+    // enabled: !!select, // Only run if select is defined
   });
 
   const handleSelect = (id: number) => {
@@ -43,7 +68,19 @@ export default function HomeScreen() {
   };
 
   if (categoryError) {
-    return <Text>Error: {categoryError.message}</Text>;
+    return (
+      <Box className=" flex-1 items-center justify-center">
+        <Text className="mb-4">Error: {categoryError.message}</Text>
+        <Button
+          size="md"
+          variant="solid"
+          action="primary"
+          onPress={() => refetchCategories()}
+        >
+          <ButtonText>Retry</ButtonText>
+        </Button>
+      </Box>
+    );
   }
 
   return (
@@ -73,7 +110,16 @@ export default function HomeScreen() {
         <VStack className="mt-4 px-5">
           <Title title="Shop By Category" actionText="See All" />
           {isCategoryPending ? (
-            <Text>Loading...</Text>
+            <HStack space="4xl" className=" my-4 align-middle">
+              {Array.from({ length: 5 }).map((_, index) => (
+                <Skeleton
+                  key={index}
+                  variant="circular"
+                  speed={4}
+                  className=" h-[56px] w-[56px]"
+                />
+              ))}
+            </HStack>
           ) : (
             <FlashList
               data={categories}
@@ -87,7 +133,6 @@ export default function HomeScreen() {
               showsHorizontalScrollIndicator={false}
             />
           )}
-          ;
           <Title title="Recommended for You" actionText="See All" />
           <FlashList
             data={products}

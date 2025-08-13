@@ -16,16 +16,16 @@ const blurhash =
 const IMG_URL = process.env.EXPO_PUBLIC_IMG_URL;
 
 const Category = ({ id, name, image, select, onSelect }: CategoryProps) => {
+  // console.log("first", { id, name, image, select });
   return (
     <Pressable onPress={() => onSelect(id)}>
       <Card className="items-center gap-2">
         <Image
           style={[
-            { width: 56, height: 56 },
+            { width: 56, height: 56, borderRadius: 28 },
             select === id && {
               borderColor: "orange",
               borderWidth: 2,
-              borderRadius: 28,
             },
           ]}
           source={IMG_URL + image}
