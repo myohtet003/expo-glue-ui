@@ -9,11 +9,17 @@ export const fetchCategories = async () => {
 
   //Simulate a delay for demonstraion purpose
   //do not use in production
-  await new Promise((resolve) => setTimeout(resolve, 3000));
+  // await new Promise((resolve) => setTimeout(resolve, 3000));
   return response.data;
 };
 
-export const fetchProducts = async ({ pageParam, categoryId }: { pageParam: number | undefined; categoryId: number }) => {
+export const fetchProducts = async ({
+  pageParam,
+  categoryId,
+}: {
+  pageParam: number | undefined;
+  categoryId: number;
+}) => {
   console.log("Fetching products...", pageParam, "Category: ", categoryId);
 
   let url = `users/products?limit=3&category=${categoryId}`;
@@ -27,6 +33,6 @@ export const fetchProducts = async ({ pageParam, categoryId }: { pageParam: numb
   // console.log("first", response.data);
 
   //Simulate a delay for demonstraion purpose
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+  // await new Promise((resolve) => setTimeout(resolve, 1000));
   return response.data;
 };

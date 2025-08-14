@@ -40,11 +40,11 @@ export default function HomeScreen() {
     queryFn: fetchCategories,
   });
 
-  // useEffect(() => {
-  //   if(categories) {
-  //     setSelect(categories[0].id)
-  //   }
-  // }, [categories]);
+  useEffect(() => {
+    if(categories) {
+      setSelect(categories[0].id)
+    }
+  }, [categories]);
 
   const {
     data,
