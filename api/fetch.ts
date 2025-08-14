@@ -5,7 +5,7 @@ export const fetchCategories = async () => {
 
   const response = await api.get("users/categories");
 
-  // console.log("first", response.data);
+  console.log("categories", response.data);
 
   //Simulate a delay for demonstraion purpose
   //do not use in production
@@ -14,7 +14,7 @@ export const fetchCategories = async () => {
 };
 
 export const fetchProducts = async ({ pageParam, categoryId }: { pageParam: number | undefined; categoryId: number }) => {
-  console.log("Fetching products...");
+  console.log("Fetching products...", pageParam, "Category: ", categoryId);
 
   let url = `users/products?limit=3&category=${categoryId}`;
 

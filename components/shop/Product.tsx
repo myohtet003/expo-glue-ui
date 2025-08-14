@@ -15,9 +15,12 @@ import { useRouter } from "expo-router";
 const blurhash =
   "|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[";
 
+const IMG_URL = process.env.EXPO_PUBLIC_IMG_URL; 
+console.log("first", IMG_URL)
+
 const Product = ({
   id,
-  brand,
+  brand, 
   title,
   star,
   quantity,
@@ -32,7 +35,7 @@ const Product = ({
       <Card className="p-0">
         <Image
           style={{ width: "100%", aspectRatio: 3 / 4, borderRadius: 5 }}
-          source={image}
+          source={IMG_URL + image}
           placeholder={{ blurhash }}
           contentFit="cover"
           transition={1000}
