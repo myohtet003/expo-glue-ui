@@ -12,7 +12,7 @@ import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import { Heading } from "@/components/ui/heading";
 import { useAuthStore } from "@/store/AuthStore";
-import { formatTime } from "@/app/utils/index";
+import { formatTime } from "@/utils/index";
 import { authApi } from "@/api";
 import {
   useToast,

@@ -16,7 +16,6 @@ const blurhash =
 const IMG_URL = process.env.EXPO_PUBLIC_IMG_URL;
 
 const Category = ({ id, name, image, select, onSelect }: CategoryProps) => {
-  // console.log("first", { id, name, image, select });
   return (
     <Pressable onPress={() => onSelect(id)}>
       <Card className="items-center gap-2">

@@ -4,11 +4,8 @@ export const fetchCategories = async () => {
   console.log("Fetching categories...");
 
   const response = await api.get("users/categories");
-
-  console.log("categories", response.data);
-
-  //Simulate a delay for demonstraion purpose
-  //do not use in production
+  // Simulate a delay for demonstration purposes
+  // Do not Use in Production
   // await new Promise((resolve) => setTimeout(resolve, 3000));
   return response.data;
 };
@@ -20,19 +17,37 @@ export const fetchProducts = async ({
   pageParam: number | undefined;
   categoryId: number;
 }) => {
-  console.log("Fetching products...", pageParam, "Category: ", categoryId);
+  console.log("Fetching products...", pageParam, "Category : ", categoryId);
 
-  let url = `users/products?limit=3&category=${categoryId}`;
-
+  let url = `users/products?limit=2&category=${categoryId}`;
   if (pageParam) {
     url += `&cursor=${pageParam}`;
   }
 
   const response = await api.get(url);
+  // Simulate a delay for demonstration purposes
+  // Do not Use in Production
+  // await new Promise((resolve) => setTimeout(resolve, 2000));
+  return response.data;
+};
 
-  // console.log("first", response.data);
+export const toggleFavourite = async ({
+  productId,
+  favourite,
+}: {
+  productId: number;
+  favourite: boolean;
+}) => {
+  console.log("Favourite api --------", productId);
 
-  //Simulate a delay for demonstraion purpose
-  // await new Promise((resolve) => setTimeout(resolve, 1000));
+  const response = await api.patch("users/products/favourite-toggle", {
+    productId,
+    favourite,
+  });
+
+  // Simulate a delay for demonstration purposes
+  // Do not Use in Production
+  // await new Promise((resolve) => setTimeout(resolve, 2000));
+
   return response.data;
 };

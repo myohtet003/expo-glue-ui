@@ -1,4 +1,5 @@
 import { Image } from "expo-image";
+import { useRouter } from "expo-router";
 
 import { Card } from "@/components/ui/card";
 import { Pressable } from "@/components/ui/pressable";
@@ -7,20 +8,19 @@ import { Icon, FavouriteIcon, StarIcon } from "@/components/ui/icon";
 import { VStack } from "@/components/ui/vstack";
 import { HStack } from "@/components/ui/hstack";
 import { Text } from "@/components/ui/text";
-import { useRouter } from "expo-router";
 
-// interface ProductProps extends ProductType {
-// }
+interface ProductProps extends ProductType {
+  toggleFavourite: (productId: number, favourite: boolean) => void;
+}
+
+const IMG_URL = process.env.EXPO_PUBLIC_IMG_URL;
 
 const blurhash =
   "|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[";
 
-const IMG_URL = process.env.EXPO_PUBLIC_IMG_URL; 
-console.log("first", IMG_URL)
-
 const Product = ({
   id,
-  brand, 
+  brand,
   title,
   star,
   quantity,
@@ -28,19 +28,27 @@ const Product = ({
   discount,
   image,
   users,
-}: ProductType) => {
+  toggleFavourite,
+}: ProductProps) => {
   const router = useRouter();
+
   return (
-    <Pressable className="mx-2 mb-4" onPress={() => router.navigate({pathname:'/detail', params:{id}})}>
+    <Pressable
+      className="mb-4 px-6"
+      onPress={() => router.navigate({ pathname: "/detail", params: { id } })}
+    >
       <Card className="p-0">
         <Image
           style={{ width: "100%", aspectRatio: 3 / 4, borderRadius: 5 }}
           source={IMG_URL + image}
           placeholder={{ blurhash }}
           contentFit="cover"
-          transition={1000}
+          transition={500}
         />
-        <Pressable className="absolute right-2 top-2 rounded-full bg-zinc-300/40">
+        <Pressable
+          className="absolute right-2 top-2 rounded-full bg-zinc-300/40"
+          onPress={() => toggleFavourite(id, users.length === 0)}
+        >
           <Icon
             as={FavouriteIcon}
             className={`m-3 h-5 w-5 ${users.length > 0 && "fill-red-400"} text-red-400`}
