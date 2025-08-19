@@ -118,9 +118,10 @@ export default function HomeScreen() {
     // onSuccess: () => {
     //   queryClient.invalidateQueries({ queryKey: ["products", select] });
     // },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["products", select] });
-    },
+
+    // onSettled: () => {
+    //   queryClient.invalidateQueries({ queryKey: ["products", select] });
+    // },
   });
 
   const handleToggleFavourite = (productId: number, favourite: boolean) =>

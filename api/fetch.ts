@@ -1,3 +1,4 @@
+import { ProductType } from "@/types";
 import api from "./";
 
 export const fetchCategories = async () => {
@@ -48,6 +49,19 @@ export const toggleFavourite = async ({
   // Simulate a delay for demonstration purposes
   // Do not Use in Production
   // await new Promise((resolve) => setTimeout(resolve, 2000));
+
+  return response.data;
+};
+
+
+export const fetchProduct = async (productId: number): Promise<ProductType> => {
+  console.log("Fetching product Detail...", productId);
+
+  const response = await api.get(`users/products/${productId}`);
+
+  // Simulate a delay for demonstration purposes
+  // Do not Use in Production
+  await new Promise((resolve) => setTimeout(resolve, 2000));
 
   return response.data;
 };
