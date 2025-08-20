@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQueryClient, useMutation, useQuery } from "@tanstack/react-query";
 
 import { VStack } from "@/components/ui/vstack";
 import ViewPager from "@/components/shop/ViewPager";
@@ -44,12 +44,13 @@ import { Box } from "@/components/ui/box";
 import { Fab, FabLabel, FabIcon } from "@/components/ui/fab";
 import useCartStore from "@/store/CartStore";
 import type { CartItem } from "@/types";
-import { fetchProduct } from "@/api/fetch";
+import { fetchProduct, toggleFavourite } from "@/api/fetch";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const Detail = () => {
   const { id } = useLocalSearchParams();
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const {
     data: product,
@@ -61,6 +62,63 @@ const Detail = () => {
     queryFn: () => fetchProduct(+id),
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
+
+  const { mutate } = useMutation({
+    mutationFn: toggleFavourite,
+    onMutate: async ({ productId, favourite }) => {
+      await queryClient.cancelQueries({ queryKey: ["product", id] });
+
+      // Snapshot the previous value
+      const previousProduct = queryClient.getQueryData(["product", id]);
+
+      queryClient.setQueryData(["product", id], (oldData: any) => {
+        if (!oldData) return oldData;
+
+        const favouriteData = favourite ? [{ id: 1 }] : [];
+        return {
+          ...oldData,
+          users: favouriteData,
+        };
+      });
+
+      return { previousProduct };
+    },
+
+    onError: (err, variables, context) => {
+      queryClient.setQueryData(["product", id], context?.previousProduct);
+      console.error("Error toggling favourite:", err);
+    },
+
+    onSuccess: (data, variables, context) => {
+      if (!product) return null;
+      const queryKey = ["products", product?.categoryId];
+      queryClient.setQueryData(queryKey, (oldData: any) => {
+        if (!oldData) return oldData;
+
+        return {
+          ...oldData,
+          pages: oldData.pages.map((page: any) => ({
+            ...page,
+            products: page.products.map((item: any) => {
+              if (item.id === +id) {
+                return {
+                  ...item,
+                  users: variables.favourite ? [{ id: 1 }] : [],
+                };
+              }
+              return item;
+            }),
+          })),
+        };
+      });
+    },
+  });
+
+  const handleFavourite = () => {
+    if (product) {
+      mutate({ productId: +id, favourite: product!.users?.length === 0 });
+    }
+  };
 
   const [more, setMore] = useState(false);
   const [colors, setColors] = useState([]);
@@ -189,7 +247,7 @@ const Detail = () => {
                 ({product?.quantity})
               </Text>
             </HStack>
-            <Pressable>
+            <Pressable onPress={handleFavourite}>
               <Icon
                 as={FavouriteIcon}
                 className={`mr-2 h-5 w-5 ${product!.users?.length > 0 && "fill-red-400"} text-red-400`}

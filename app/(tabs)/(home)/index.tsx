@@ -115,9 +115,16 @@ export default function HomeScreen() {
       } 
       //Toast Message
     },
-    // onSuccess: () => {
-    //   queryClient.invalidateQueries({ queryKey: ["products", select] });
-    // },
+    onSuccess: (data, variables, context) => {
+      queryClient.setQueryData(["product", String(variables.productId)], (oldData: any) => {
+        if (!oldData) return oldData;
+        // console.log("Old Data", oldData);
+        return {
+          ...oldData,
+          users: variables.favourite ? [{ id: 1 }] : [],
+        };
+      });
+    },
 
     // onSettled: () => {
     //   queryClient.invalidateQueries({ queryKey: ["products", select] });

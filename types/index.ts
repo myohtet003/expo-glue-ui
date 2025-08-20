@@ -30,7 +30,7 @@ interface SizeType {
 
 export interface ProductType {
   id: number;
-  categories_id: number;
+  categoryId: number;
   brand: string;
   title: string;
   star: number;
